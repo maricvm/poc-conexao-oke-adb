@@ -1,7 +1,5 @@
 package examples;
 
-import com.oracle.bmc.auth.InstancePrincipalsAuthenticationDetailsProvider;
-import com.oracle.bmc.auth.ResourcePrincipalAuthenticationDetailsProvider;
 import com.oracle.bmc.auth.okeworkloadidentity.OkeWorkloadIdentityAuthenticationDetailsProvider;
 import com.oracle.bmc.identitydataplane.DataplaneClient;
 import com.oracle.bmc.identitydataplane.model.GenerateScopedAccessTokenDetails;
@@ -14,9 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import oracle.ucp.jdbc.PoolDataSource;
-import oracle.ucp.jdbc.PoolDataSourceFactory;
-
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PublicKey;
@@ -26,35 +21,28 @@ import oracle.jdbc.datasource.impl.OracleDataSource;
 
 public class GenerateDbToken {
 
-    private PoolDataSource poolDataSource;
-
-    private static final String DATABASE_URL =
-            "jdbc:oracle:thin@" +
-                    "(description=" +
-                    "(retry_count=20)" +
-                    "(retry_delay=3)" +
-                    "(address=" +
-                    "(protocol=tcps)" +
-                    "(port=1521)" +
-                    "(host=seuPrivateHost.adb.sa-saopaulo-1.oraclecloud.com)" +
-                    ")" +
-                    "(connect_data=" +
-                    "(service_name=seuServiceName.adb.oraclecloud.com)" +
-                    ")" +
-                    "(security=" +
-                    "(ssl_server_dn_match=yes)" +
-                    "(ssl_server_cert_dn=\"CN=adb.sa-saopaulo-1.oraclecloud.com, O=Oracle Corporation, L=Redwood City, ST=California, C=US\")" +
-                    ")" +
-                    ")";
-
-    private static final String CONN_FACTORY_CLASS_NAME =
-            "oracle.jdbc.pool.OracleDataSource";
-
-    private String dbToken;
+    private static final String DATABASE_URL = "jdbc:oracle:thin@" +
+            "(description=" +
+            "(retry_count=20)" +
+            "(retry_delay=3)" +
+            "(address=" +
+            "(protocol=tcps)" +
+            "(port=1521)" +
+            "(host=seuPrivateHost.adb.sa-saopaulo-1.oraclecloud.com)" +
+            ")" +
+            "(connect_data=" +
+            "(service_name=seuServiceName.adb.oraclecloud.com)" +
+            ")" +
+            "(security=" +
+            "(ssl_server_dn_match=yes)" +
+            "(ssl_server_cert_dn=\"CN=adb.sa-saopaulo-1.oraclecloud.com, O=Oracle Corporation, L=Redwood City, ST=California, C=US\")"
+            +
+            ")" +
+            ")";
 
     public static void main(String[] args) throws Exception {
-        OkeWorkloadIdentityAuthenticationDetailsProvider provider =
-                OkeWorkloadIdentityAuthenticationDetailsProvider.builder().build();
+        OkeWorkloadIdentityAuthenticationDetailsProvider provider = OkeWorkloadIdentityAuthenticationDetailsProvider
+                .builder().build();
 
         DataplaneClient identityClient = DataplaneClient.builder()
                 .build(provider);
@@ -65,19 +53,16 @@ public class GenerateDbToken {
 
         String publicKeyPem = convertToPem(keyPair.getPublic());
 
-        GenerateScopedAccessTokenDetails details =
-                GenerateScopedAccessTokenDetails.builder()
-                        .scope("urn:oracle:db::id::*")
-                        .publicKey(publicKeyPem)
-                        .build();
+        GenerateScopedAccessTokenDetails details = GenerateScopedAccessTokenDetails.builder()
+                .scope("urn:oracle:db::id::*")
+                .publicKey(publicKeyPem)
+                .build();
 
-        GenerateScopedAccessTokenRequest request =
-                GenerateScopedAccessTokenRequest.builder()
-                        .generateScopedAccessTokenDetails(details)
-                        .build();
+        GenerateScopedAccessTokenRequest request = GenerateScopedAccessTokenRequest.builder()
+                .generateScopedAccessTokenDetails(details)
+                .build();
 
-        GenerateScopedAccessTokenResponse response =
-                identityClient.generateScopedAccessToken(request);
+        GenerateScopedAccessTokenResponse response = identityClient.generateScopedAccessToken(request);
 
         String dbToken = response
                 .getSecurityToken()
@@ -124,7 +109,7 @@ public class GenerateDbToken {
 
     private static String queryCurrentUser(Connection connection) throws Exception {
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT USER FROM sys.dual")) {
+                ResultSet resultSet = statement.executeQuery("SELECT USER FROM sys.dual")) {
             if (resultSet.next()) {
                 return resultSet.getString(1);
             }
@@ -138,8 +123,8 @@ public class GenerateDbToken {
         // Teste 1: Query simples
         System.out.println("   Teste 1: Query simples");
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                     "SELECT 'Conexão via IAM Token funcionando!' AS mensagem FROM dual")) {
+                ResultSet resultSet = statement.executeQuery(
+                        "SELECT 'Conexão via IAM Token funcionando!' AS mensagem FROM dual")) {
             if (resultSet.next()) {
                 System.out.println("   ✓ " + resultSet.getString(1));
             }
@@ -148,8 +133,8 @@ public class GenerateDbToken {
         // Teste 2: Verificar roles
         System.out.println("\n   Teste 2: Roles atribuídas");
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                     "SELECT granted_role FROM user_role_privs ORDER BY granted_role")) {
+                ResultSet resultSet = statement.executeQuery(
+                        "SELECT granted_role FROM user_role_privs ORDER BY granted_role")) {
             while (resultSet.next()) {
                 System.out.println("   ✓ Role: " + resultSet.getString(1));
             }
@@ -158,8 +143,8 @@ public class GenerateDbToken {
         // Teste 3: Verificar privilégios de sistema
         System.out.println("\n   Teste 3: Privilégios de sistema");
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                     "SELECT privilege FROM user_sys_privs ORDER BY privilege")) {
+                ResultSet resultSet = statement.executeQuery(
+                        "SELECT privilege FROM user_sys_privs ORDER BY privilege")) {
             int count = 0;
             while (resultSet.next() && count < 5) {
                 System.out.println("   ✓ Privilege: " + resultSet.getString(1));
@@ -191,16 +176,15 @@ public class GenerateDbToken {
 
             // Passo 2: Criar tabela
             System.out.println("\n   Passo 2: Criando nova tabela");
-            String createTableSQL =
-                    "CREATE TABLE " + tableName + " (" +
-                            "  id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, " +
-                            "  nome VARCHAR2(100) NOT NULL, " +
-                            "  email VARCHAR2(100), " +
-                            "  idade NUMBER, " +
-                            "  ativo VARCHAR2(1) DEFAULT 'S', " +
-                            "  data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                            "  data_modificacao TIMESTAMP " +
-                            ")";
+            String createTableSQL = "CREATE TABLE " + tableName + " (" +
+                    "  id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY, " +
+                    "  nome VARCHAR2(100) NOT NULL, " +
+                    "  email VARCHAR2(100), " +
+                    "  idade NUMBER, " +
+                    "  ativo VARCHAR2(1) DEFAULT 'S', " +
+                    "  data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "  data_modificacao TIMESTAMP " +
+                    ")";
             statement.execute(createTableSQL);
             System.out.println("   ✓ Tabela '" + tableName + "' criada com sucesso!");
 
