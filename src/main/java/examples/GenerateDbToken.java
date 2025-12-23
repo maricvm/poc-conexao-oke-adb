@@ -21,7 +21,7 @@ import oracle.jdbc.datasource.impl.OracleDataSource;
 
 public class GenerateDbToken {
 
-    private static final String DATABASE_URL = "jdbc:oracle:thin@" +
+    private static final String DATABASE_URL = "jdbc:oracle:thin:@" +
             "(description=" +
             "(retry_count=20)" +
             "(retry_delay=3)" +

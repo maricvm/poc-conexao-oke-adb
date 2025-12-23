@@ -134,70 +134,24 @@ O código usado encontra-se disponível [nesse repositório](https://github.com/
         ")";
 ```
 
-### 3.3. Script de Build e Deploy
-Nesse repositório é possível encontrar um [exemplo](inserir link) de script de build e deploy. Ou crie a partir do código a seguir:
+### 3.3. Scripts de Automação
 
+O projeto conta com dois scripts principais localizados na pasta `scripts/`:
+
+#### 3.3.1 Build e Push (Execução Local)
+O script `scripts/build-and-push.sh` é responsável por compilar a aplicação, construir a imagem Docker e enviá-la para o Container Registry (OCIR).
+
+**Uso:**
 ```bash
-#!/bin/bash
-set -e
+./scripts/build-and-push.sh <VERSAO>
+```
 
-VERSION=${1:-1.0}
-REGISTRY="<seu-registry-ocir>"  # Ex: gru.ocir.io/namespace/adb-oke-app
-NAMESPACE="app-teste"
-SERVICE_ACCOUNT="sa-adb-app"
-APP_NAME="java-adb-test"
+#### 3.3.2 Deploy (Execução no Cluster)
+O script `scripts/deploy.sh` realiza o deploy da aplicação no cluster Kubernetes. Este script deve ser executado em um ambiente com acesso ao cluster (kubectl configurado).
 
-echo "=== Build e Deploy da Aplicação ADB-OKE ==="
-echo "Versão: ${VERSION}"
-
-# 1. Compilar aplicação
-echo "1. Compilando aplicação Java..."
-mvn clean package
-
-# 2. Criar imagem Docker
-echo "2. Criando imagem Docker..."
-docker build -t ${REGISTRY}:${VERSION} .
-
-# 3. Push da imagem
-echo "3. Fazendo push da imagem..."
-docker push ${REGISTRY}:${VERSION}
-
-# 4. Deploy no OKE
-echo "4. Fazendo deploy no OKE..."
-cat <<EOF | kubectl apply -f -
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ${APP_NAME}
-  namespace: ${NAMESPACE}
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ${APP_NAME}
-  template:
-    metadata:
-      labels:
-        app: ${APP_NAME}
-    spec:
-      serviceAccountName: ${SERVICE_ACCOUNT}
-      containers:
-      - name: app
-        image: ${REGISTRY}:${VERSION}
-        imagePullPolicy: Always
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
-EOF
-
-echo "✓ Deploy concluído com sucesso"
-echo ""
-echo "Para acompanhar os logs:"
-echo "kubectl logs deployment/${APP_NAME} -n ${NAMESPACE} -f"
+**Uso:**
+```bash
+./scripts/deploy.sh
 ```
 
 ### 3.4. Dockerfile
@@ -213,13 +167,16 @@ CMD ["java", "-jar", "app.jar"]
 
 ## 4. Testes e Validação
 
-### 4.1. Preparar Ambiente
+### 4.1. Execução
 ```bash
-# Dar permissão de execução ao script
-chmod +x build-and-deploy.sh
+# 1. Dar permissão de execução aos scripts
+chmod +x scripts/*.sh
 
-# Executar build e deploy
-./build-and-deploy.sh 1.0
+# 2. Build e Push da imagem (Local)
+./scripts/build-and-push.sh 0.1
+
+# 3. Deploy no Cluster (Requer kubectl configurado) ou rodar o script dentro do cluster através do cloud shell
+./scripts/deploy.sh 0.1
 ```
 
 ### 4.2. Acompanhar Logs
