@@ -110,7 +110,7 @@ Mais detalhes das grants utilizadas estão descritos na tabela abaixo.
 As dependências maven utilizadas podem ser encontradas [nesse repositório](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/pom.xml).
 
 ### 3.2 Código Java da Aplicação
-O código usado encontra-se disponível [nesse repositório](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/generatedbtoken.java). Atualize a connection string com os valores do seu ADB.
+O código usado encontra-se disponível [nesse repositório](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/src/main/java/examples/GenerateDbToken.java). Atualize a connection string com os valores do seu ADB.
 
 ```java
  // ATUALIZAR COM OS DADOS DO SEU ADB
@@ -139,7 +139,7 @@ O código usado encontra-se disponível [nesse repositório](https://github.com/
 O projeto conta com dois scripts principais localizados na pasta `scripts/`:
 
 #### 3.3.1 Build e Push (Execução Local)
-O script `scripts/build-and-push.sh` é responsável por compilar a aplicação, construir a imagem Docker e enviá-la para o Container Registry (OCIR).
+O script [`scripts/build-and-push.sh`](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/scripts/build-and-push.sh) é responsável por compilar a aplicação, construir a imagem Docker e enviá-la para o Container Registry (OCIR).
 
 **Uso:**
 ```bash
@@ -147,7 +147,7 @@ O script `scripts/build-and-push.sh` é responsável por compilar a aplicação,
 ```
 
 #### 3.3.2 Deploy (Execução no Cluster)
-O script `scripts/deploy.sh` realiza o deploy da aplicação no cluster Kubernetes. Este script deve ser executado em um ambiente com acesso ao cluster (kubectl configurado).
+O script [`scripts/deploy.sh`](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/scripts/deploy.sh) realiza o deploy da aplicação no cluster Kubernetes. Este script deve ser executado em um ambiente com acesso ao cluster (kubectl configurado).
 
 **Uso:**
 ```bash
