@@ -12,10 +12,23 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_NAME="my-app-name"
-OCIR_REGION="gru.ocir.io"
-OCIR_NAMESPACE="<namespace-ocir>"
-OCIR_REPO="<repo-ocir>"
+# Load environment variables from .env file if it exists
+if [ -f .env ]; then
+    source .env
+fi
+
+# APP_NAME, OCIR_REGION, OCIR_NAMESPACE, OCIR_REPO must be set as environment variables
+
+# Check for required environment variables
+if [ -z "$APP_NAME" ] || [ -z "$OCIR_REGION" ] || [ -z "$OCIR_NAMESPACE" ] || [ -z "$OCIR_REPO" ]; then
+    echo -e "${RED}Error: Required environment variables are not set.${NC}"
+    echo "Please set the following environment variables:"
+    echo "  APP_NAME"
+    echo "  OCIR_REGION"
+    echo "  OCIR_NAMESPACE"
+    echo "  OCIR_REPO"
+    exit 1
+fi
 
 # Check if version argument is provided
 if [ -z "$1" ]; then

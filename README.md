@@ -109,11 +109,52 @@ Mais detalhes das grants utilizadas estão descritos na tabela abaixo.
 ### 3.1. Dependências Maven (pom.xml)
 As dependências maven utilizadas podem ser encontradas [nesse repositório](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/pom.xml).
 
-### 3.2 Código Java da Aplicação
-O código usado encontra-se disponível [nesse repositório](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/src/main/java/examples/GenerateDbToken.java). Atualize a connection string com os valores do seu ADB.
+
+### 3.2. Configuração de Ambiente
+
+Antes de executar os scripts de automação, é necessário configurar as seguintes variáveis de ambiente. Estas variáveis definem os parâmetros para o build, push e deploy da aplicação.
+
+O projeto suporta o uso de um arquivo `.env` para configuração das variáveis de ambiente.
+
+1. Copie o arquivo de exemplo:
+   ```bash
+   cp .env.example .env
+   ```
+2. Edite o arquivo `.env` com os seus valores:
+   ```bash
+   # Configuração da Aplicação
+   APP_NAME="java-teste"
+   NAMESPACE="<namesace-k8s>"
+
+   # Configuração do OCI Registry
+   OCIR_REGION="gru.ocir.io"
+   OCIR_NAMESPACE="<namespace-ocir>"
+   OCIR_REPO="<nome-repo>"
+
+   # Configuração do Banco de Dados
+   DB_HOST="<seu-host>.adb.sa-saopaulo-1.oraclecloud.com"
+   DB_SERVICE_NAME="<seu-service-name>_medium.adb.oraclecloud.com"
+   ```
+
+Alternativamente, você pode exportar as variáveis diretamente no shell:
+
+| Variável | Descrição | Exemplo |
+|----------|-----------|---------|
+| `APP_NAME` | Nome da aplicação (usado para imagem Docker e Pod) | `java-teste` |
+| `NAMESPACE` | Namespace do Kubernetes onde a aplicação será deployada | `app-teste` |
+| `OCIR_REGION` | Região do OCI Registry | `gru.ocir.io` |
+| `OCIR_NAMESPACE` | Namespace do OCI Registry (Tenancy Namespace) | `<tenancy-namespace>` |
+| `OCIR_REPO` | Nome do repositório no OCI Registry | `<nome-repo>` |
+| `DB_HOST` | Host do Autonomous Database | `<seu-host>.adb.sa-saopaulo-1.oraclecloud.com` |
+| `DB_SERVICE_NAME` | Service Name do Autonomous Database | `<seu-service-name>_medium.adb.oraclecloud.com` |
+
+---
+
+
+### 3.3 Código Java da Aplicação
+O código usado encontra-se disponível [nesse repositório](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/src/main/java/examples/GenerateDbToken.java). A connection string será atualizada com base na sua configuração de ambiente.
 
 ```java
- // ATUALIZAR COM OS DADOS DO SEU ADB
     private static final String DATABASE_URL = 
         "jdbc:oracle:thin:@" +
         "(description=" +
@@ -122,10 +163,10 @@ O código usado encontra-se disponível [nesse repositório](https://github.com/
           "(address=" +
             "(protocol=tcps)" +
             "(port=1521)" +
-            "(host=<seu-host>.adb.sa-saopaulo-1.oraclecloud.com)" +
+            "(host=${DB_HOST})" +
           ")" +
           "(connect_data=" +
-            "(service_name=<seu-service-name>_medium.adb.oraclecloud.com)" +
+            "(service_name=${DB_SERVICE_NAME})" +
           ")" +
           "(security=" +
             "(ssl_server_dn_match=yes)" +
@@ -134,9 +175,9 @@ O código usado encontra-se disponível [nesse repositório](https://github.com/
         ")";
 ```
 
-**Obs.:** É possível obter os dados da connection string acessando os valores do database connection do banco pelo portal da OCI, utilize a connection do TNS name que termina com "tp" pois é a mais ideal para OLTP e aplicações transacionais típicas tendo em vista que possui menos overhead e um comportamento previsível.
+**Obs.:** É possível verificar os dados da connection string acessando os valores do database connection do banco pelo portal da OCI, utilize a connection do TNS name que termina com "tp" pois é a mais ideal para OLTP e aplicações transacionais típicas tendo em vista que possui menos overhead e um comportamento previsível.
 
-Vale ressaltar, que na utilização do client de conexão é utilizado o método _createConnectionBuilder().accessToken(accessToken)_ e ele será resposável por consumir o token de acesso decodificado obtido nessa aplicação.
+Vale ressaltar, que no client de conexão é utilizado o método _createConnectionBuilder().accessToken(accessToken)_ e ele será resposável por consumir o token de acesso decodificado obtido nessa aplicação.
 
 ```java
     private static Connection connectToDatabase(AccessToken accessToken) throws Exception {
@@ -149,11 +190,11 @@ Vale ressaltar, que na utilização do client de conexão é utilizado o método
     }
 ```
 
-### 3.3. Scripts de Automação
+### 3.4. Scripts de Automação
 
 O projeto conta com dois scripts principais localizados na pasta `scripts/`:
 
-#### 3.3.1 Build e Push (Execução Local)
+#### 3.4.1 Build e Push (Execução Local)
 O script [`scripts/build-and-push.sh`](https://github.com/maricvm/poc-conexao-oke-adb/blob/main/scripts/build-and-push.sh) é responsável por compilar a aplicação, construir a imagem Docker e enviá-la para o Container Registry (OCIR).
 
 **Uso:**

@@ -21,24 +21,38 @@ import oracle.jdbc.datasource.impl.OracleDataSource;
 
 public class GenerateDbToken {
 
-    private static final String DATABASE_URL = "jdbc:oracle:thin:@" +
-            "(description=" +
-            "(retry_count=20)" +
-            "(retry_delay=3)" +
-            "(address=" +
-            "(protocol=tcps)" +
-            "(port=1521)" +
-            "(host=seuPrivateHost.adb.sa-saopaulo-1.oraclecloud.com)" +
-            ")" +
-            "(connect_data=" +
-            "(service_name=seuServiceName.adb.oraclecloud.com)" +
-            ")" +
-            "(security=" +
-            "(ssl_server_dn_match=yes)" +
-            "(ssl_server_cert_dn=\"CN=adb.sa-saopaulo-1.oraclecloud.com, O=Oracle Corporation, L=Redwood City, ST=California, C=US\")"
-            +
-            ")" +
-            ")";
+    private static final String DATABASE_URL;
+
+    static {
+        String dbHost = System.getenv("DB_HOST");
+        String dbServiceName = System.getenv("DB_SERVICE_NAME");
+
+        if (dbHost == null || dbHost.isEmpty()) {
+            throw new RuntimeException("Environment variable DB_HOST is required");
+        }
+        if (dbServiceName == null || dbServiceName.isEmpty()) {
+            throw new RuntimeException("Environment variable DB_SERVICE_NAME is required");
+        }
+
+        DATABASE_URL = "jdbc:oracle:thin:@" +
+                "(description=" +
+                "(retry_count=20)" +
+                "(retry_delay=3)" +
+                "(address=" +
+                "(protocol=tcps)" +
+                "(port=1521)" +
+                "(host=" + dbHost + ")" +
+                ")" +
+                "(connect_data=" +
+                "(service_name=" + dbServiceName + ")" +
+                ")" +
+                "(security=" +
+                "(ssl_server_dn_match=yes)" +
+                "(ssl_server_cert_dn=\"CN=adb.sa-saopaulo-1.oraclecloud.com, O=Oracle Corporation, L=Redwood City, ST=California, C=US\")"
+                +
+                ")" +
+                ")";
+    }
 
     public static void main(String[] args) throws Exception {
         OkeWorkloadIdentityAuthenticationDetailsProvider provider = OkeWorkloadIdentityAuthenticationDetailsProvider

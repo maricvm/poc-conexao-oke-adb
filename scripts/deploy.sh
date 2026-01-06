@@ -12,10 +12,30 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-POD_NAME="java-teste"
-NAMESPACE="<namesace-k8s>"
+# Load environment variables from .env file if it exists
+if [ -f .env ]; then
+    source .env
+fi
+
+# APP_NAME, NAMESPACE, OCIR_REGION, OCIR_NAMESPACE, OCIR_REPO, DB_HOST, DB_SERVICE_NAME must be set as environment variables
+
+# Check for required environment variables
+if [ -z "$APP_NAME" ] || [ -z "$NAMESPACE" ] || [ -z "$OCIR_REGION" ] || [ -z "$OCIR_NAMESPACE" ] || [ -z "$OCIR_REPO" ] || [ -z "$DB_HOST" ] || [ -z "$DB_SERVICE_NAME" ]; then
+    echo -e "${RED}Error: Required environment variables are not set.${NC}"
+    echo "Please set the following environment variables:"
+    echo "  APP_NAME"
+    echo "  NAMESPACE"
+    echo "  OCIR_REGION"
+    echo "  OCIR_NAMESPACE"
+    echo "  OCIR_REPO"
+    echo "  DB_HOST"
+    echo "  DB_SERVICE_NAME"
+    exit 1
+fi
+
+POD_NAME="${APP_NAME}"
 YAML_FILE="pod.yaml"
-OCIR_IMAGE="gru.ocir.io/<namespace-ocir>/<repo-ocir>"
+OCIR_IMAGE="${OCIR_REGION}/${OCIR_NAMESPACE}/${OCIR_REPO}"
 
 # Check if version argument is provided
 if [ -z "$1" ]; then
@@ -52,8 +72,8 @@ cat > ${YAML_FILE} << EOF
 apiVersion: v1
 kind: Pod
 metadata:
-  name: java-teste
-  namespace: teste
+  name: ${POD_NAME}
+  namespace: ${NAMESPACE}
 spec:
   serviceAccountName: testeserviceaccount
   automountServiceAccountToken: true
@@ -62,6 +82,11 @@ spec:
     - name: ngnix
       image: ${OCIR_IMAGE}:${VERSION}
       imagePullPolicy: Always
+      env:
+        - name: DB_HOST
+          value: "${DB_HOST}"
+        - name: DB_SERVICE_NAME
+          value: "${DB_SERVICE_NAME}"
       ports:
       - name: nginx
         containerPort: 8080
@@ -96,4 +121,4 @@ echo -e "${GREEN}========================================${NC}"
 
 # Show logs hint
 echo -e "\n${YELLOW}App logs"
-kubectl logs ${POD_NAME} -n ${NAMESPACE}
+kubectl logs ${POD_NAME} -n ${NAMESPACE} -f
