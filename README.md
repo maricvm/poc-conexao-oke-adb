@@ -36,7 +36,7 @@ oci iam db-token get --auth oke_workload_identity --region sa-saopaulo-1
 ```
 3. Decodifique o token JWT (disponível em ~/.oci/db-token/token) usando uma ferramenta como [jwt.io](https://www.jwt.io/)
 4. Localize o claim sub no payload - este contém o Workload Identity OCID no formato: ocid1.workload.oc1.sa-saopaulo-1...
-5. **Alternativa**: Adicione código Java na aplicação para logar o OCID do token decodificado (exemplo fornecido na seção 3.2).
+5. **Alternativa**: Adicione o código Java desse repositório na aplicação para logar o OCID do token decodificado (exemplo fornecido na seção 3.2).
 
 ## 2.3. Autonomous Database Configurado
 Para que seja possível conectar no banco da forma descrita nesse guia, os pontos a seguir devem ser observados.
@@ -134,6 +134,21 @@ O código usado encontra-se disponível [nesse repositório](https://github.com/
         ")";
 ```
 
+**Obs.:** É possível obter os dados da connection string acessando os valores do database connection no banco pelo portal da OCI, utilize a connection do TNS name que termina com "tp" pois é a mais ideal para OLTP e aplicações transacionais típicas tendo em vista que possui menos overhead e um comportamento previsível.
+
+Vale ressaltar, que na utilização do client de conexão é utilizado o método _createConnectionBuilder().accessToken(accessToken)_ e ele será resposável por consumir o token de acesso decodificado obtido nessa aplicação.
+
+```java
+    private static Connection connectToDatabase(AccessToken accessToken) throws Exception {
+        OracleDataSource dataSource = new OracleDataSource();
+        dataSource.setURL(DATABASE_URL);
+
+        return dataSource.createConnectionBuilder()
+                .accessToken(accessToken)
+                .build();
+    }
+```
+
 ### 3.3. Scripts de Automação
 
 O projeto conta com dois scripts principais localizados na pasta `scripts/`:
@@ -225,4 +240,3 @@ Workload Identity OCID: ocid1.workload.oc1.sa-saopaulo-1...
 **Causa:** Mapeamento incorreto entre Workload Identity OCID e usuário do banco.
 
 **Solução:** Decodificar o token JWT e verificar o claim sub e recriar o usuário com o OCID correto.
-
