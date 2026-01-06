@@ -53,7 +53,7 @@ echo -e "${GREEN}✓ Docker image built successfully${NC}"
 
 # Step 3: Get the image ID
 echo -e "\n${YELLOW}Step 3: Getting image ID...${NC}"
-IMAGE_ID=$(sudo docker images ${APP_NAME}:${VERSION} --format "{{.ID}}" | head -n 1)
+IMAGE_ID=$(docker images ${APP_NAME}:${VERSION} --format "{{.ID}}" | head -n 1)
 
 if [ -z "$IMAGE_ID" ]; then
     echo -e "${RED}Error: Could not find image ID for ${APP_NAME}:${VERSION}${NC}"
