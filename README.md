@@ -134,7 +134,7 @@ O código usado encontra-se disponível [nesse repositório](https://github.com/
         ")";
 ```
 
-**Obs.:** É possível obter os dados da connection string acessando os valores do database connection no banco pelo portal da OCI, utilize a connection do TNS name que termina com "tp" pois é a mais ideal para OLTP e aplicações transacionais típicas tendo em vista que possui menos overhead e um comportamento previsível.
+**Obs.:** É possível obter os dados da connection string acessando os valores do database connection do banco pelo portal da OCI, utilize a connection do TNS name que termina com "tp" pois é a mais ideal para OLTP e aplicações transacionais típicas tendo em vista que possui menos overhead e um comportamento previsível.
 
 Vale ressaltar, que na utilização do client de conexão é utilizado o método _createConnectionBuilder().accessToken(accessToken)_ e ele será resposável por consumir o token de acesso decodificado obtido nessa aplicação.
 
